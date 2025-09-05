@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+
+  postgresweb:
+    image: postgres
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      qcon-network:
+      
+  app:
+    image: qcon-web
+    build: 
+      context: .
+      args:
+        - VERSION=dev
+    command:
+      - /bin/sh
+      - -c
+      - |
+        python manage.py runserver 0.0.0.0:9000
+    environment:
+      DEBUG: true
+      API_HOST: api.local
+      API_PORT: 8000
+      API_KEY: 1234567890
+      DJANGO_SECRET_KEY: notveryS3cret
+      GIT_TAG: 0.0.1
+      IMAGE_TAG: 0.0.1
+      IMAGE_TITLE: qcon-web
+    volumes:
+      - .:/code
+      - data:/code/frontend/build/:ro
+    ports:
+      - 9000:9000
+    networks:
+      - qcon-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000 || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      postgresweb:
+        condition: service_started
+      frontend-builder:
+        condition:  service_completed_successfully
+
+  frontend-builder:
+    command:
+      - /bin/sh
+      - -c
+      - |
+        npm install
+        npm run build
+    image: node:18.16-alpine
+    working_dir: /code/frontend
+    volumes:
+      - .:/code
+      - data:/code/frontend/build/:rw
+
+  nginx-unprivileged:
+    image: nginxinc/nginx-unprivileged:1.25-alpine
+    volumes:
+      - ./conf.d/local.conf:/etc/nginx/conf.d/default.conf
+      - data:/var/www/html/:ro
+    ports:
+      - 8080:8080
+    depends_on:
+      app:
+        condition: service_healthy
+      frontend-builder:
+        condition:  service_completed_successfully
+    networks:
+      - qcon-network
+
+networks:
+  qcon-network:
+    external: true
+    name: qcon-network
+
+volumes:
+  data:

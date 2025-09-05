@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment
+spec:
+  selector:
+    matchLabels:
+      app: qcon-web
+  template:
+    metadata:
+      annotations:
+        config.linkerd.io/skip-outbound-ports: "443"
+    spec:
+      containers:
+        - name: qcon-web

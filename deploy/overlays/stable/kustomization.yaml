@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+commonLabels:
+  environment: stable
+# Prefix/Suffix required for VaultAuth configuration
+#
+namePrefix: qcon-web-
+nameSuffix: -stable
+# Teach kustomize how to update generated names
+#
+configurations:
+  - kustomizeconfig.yaml
+commonAnnotations:
+  version: 1.16.11 # {"$imagepolicy": "qcon:qcon-web-image-policy-stable:tag"}
+images:
+  - name: "qcon-web"
+    newName: "registry.ltc.bcit.ca/web-apps/qcon/qcon-web"
+    newTag: "1.16.11" # {"$imagepolicy": "qcon:qcon-web-image-policy-stable:tag"}
+# Patches ingress with public URL and deployment with annotations
+#
+patches:
+  - target:
+      kind: Ingress
+    path: ingress-patch.yaml
+  - target:
+      kind: Deployment
+    path: deployment-patch.yaml
+  # Incorporate vault-secrets
+  #
+  # adds `-stable` suffix to VaultAuth `spec.mount`
+  - target:
+      kind: VaultAuth
+    path: vault-secrets-stable/vault-auth-patch.yaml
+components:
+  # Include environment-specific secrets
+  - ./vault-secrets-stable
+  # Required for VaultAuth role and serviceaccounts
+  - ../../base/components/vault-auth

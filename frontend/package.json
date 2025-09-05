@@ -1,0 +1,46 @@
+{
+  "name": "frontend",
+  "version": "3.0.0",
+  "description": "Qcon frontend app",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "11.11.1",
+    "@emotion/styled": "11.11.0",
+    "@mui/icons-material": "5.11.16",
+    "@mui/material": "^5.13.5",
+    "axios": "1.4.0",
+    "react-dropzone": "14.2.3",
+    "react-scripts": "5.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "build_dev": "REACT_APP_DEBUG=true npm run build",
+    "watch": "run-when-changed --watch \"src/*\" --exec \"npm run build_dev\""
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "run-when-changed": "^2.1.0",
+    "sass": "^1.63.4"
+  },
+  "homepage": "."
+}
