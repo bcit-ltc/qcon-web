@@ -1,11 +1,34 @@
 # Dockerfile
 
 ## Base
-FROM registry.ltc.bcit.ca/ltc-infrastructure/images/qcon-web-base AS qcon-web-base
+# FROM registry.ltc.bcit.ca/ltc-infrastructure/images/qcon-web-base AS qcon-web-base
+
+FROM python:3.11-alpine AS qcon-web-base
+
+ENV PATH=/opt/venv/bin:/base:$PATH
+
+COPY requirements.txt ./
+
+RUN set -ex; \
+        python -m venv /opt/venv; \
+        pip install --upgrade pip; \
+        pip install -r requirements.txt;
+
 
 
 ## Frontend Builder
-FROM registry.ltc.bcit.ca/ltc-infrastructure/images/qcon-web-frontend-builder AS qcon-web-frontend-builder
+# FROM registry.ltc.bcit.ca/ltc-infrastructure/images/qcon-web-frontend-builder AS qcon-web-frontend-builder
+
+FROM node:18.16-alpine AS qcon-web-frontend-builder
+
+WORKDIR /app
+
+COPY /frontend/package.json ./
+
+RUN npm install
+
+
+
 
 COPY frontend/public ./public/
 # COPY frontend/templates ./templates
