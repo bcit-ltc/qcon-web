@@ -1,0 +1,13 @@
+*.cpython-36.pyc
+__pycache__/
+
+node_modules
+static
+package-lock.json
+*.log
+.DS_Store
+.vscode
+database
+
+migrations
+dump.rdb
