@@ -15,7 +15,7 @@ function Progress(props) {
                     <Typography variant="h2">
                         Conversion Complete!
                     </Typography>
-                    <Summary />
+                    <Summary jsonString={props.jsonString} />
                     <div className="buttons-group">
                         <Button variant="outlined" display='block' onClick={() => props.changeState('UPLOAD')}>New Conversion</Button>
                         <Button variant="contained" color="primary" onClick={() => props.changeState('PREVIEW')}>Preview Questions</Button>

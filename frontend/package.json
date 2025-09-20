@@ -4,12 +4,12 @@
   "description": "Qcon frontend app",
   "private": true,
   "dependencies": {
-    "@emotion/react": "11.11.1",
-    "@emotion/styled": "11.11.0",
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.1",
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
-    "axios": "1.4.0",
-    "react-dropzone": "14.2.3",
+    "axios": "1.12.2",
+    "react-dropzone": "14.3.8",
     "react-scripts": "5.0.1"
   },
   "scripts": {
@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "run-when-changed": "^2.1.0",
-    "sass": "^1.63.4"
+    "sass": "^1.92.1"
   },
   "homepage": "."
 }
