@@ -19,7 +19,7 @@ RUN set -ex; \
 ## Frontend Builder
 # FROM registry.ltc.bcit.ca/ltc-infrastructure/images/qcon-web-frontend-builder AS qcon-web-frontend-builder
 
-FROM node:18.16-alpine AS qcon-web-frontend-builder
+FROM node:24.8.0-alpine3.22 AS qcon-web-frontend-builder
 
 WORKDIR /app
 
@@ -71,4 +71,3 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 9000
 CMD ["daphne", "-b", "0.0.0.0", "-p", "9000", "qconweb.asgi:application"]
-

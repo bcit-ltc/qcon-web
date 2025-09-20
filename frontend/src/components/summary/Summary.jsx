@@ -7,9 +7,20 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-function Summary() {
-    var parsedJson = JSON.parse(sessionStorage.getItem('qconjsonresult'));
-    var jsonData = parsedJson["data"];
+function Summary(props) {
+    let parsedJson = null;
+    let jsonData = null;
+    try {
+        if (typeof props.jsonString === 'string' && props.jsonString.trim().length > 0) {
+            parsedJson = JSON.parse(props.jsonString);
+            jsonData = parsedJson["data"];
+        }
+    } catch (e) {
+        // Invalid JSON, leave parsedJson and jsonData as null
+    }
+    if (!jsonData) {
+        return <div>No summary data available.</div>;
+    }
     // let totalSections = 0;
     let totalRootQuestions = 0;
     let totalRootPoints = 0;

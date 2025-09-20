@@ -368,7 +368,7 @@ function PreviewQuestions(props) {
             </Box>
 
             <Collapse in={openSummary} timeout="auto">
-                <Summary />
+                <Summary jsonString={props.jsonString} />
             </Collapse>
 
             {isPackage ?

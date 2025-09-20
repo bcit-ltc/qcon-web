@@ -153,24 +153,45 @@ export default function App() {
                 
                 // eslint-disable-next-line
                 switch (messageStatus) {
-                    case 'Done':
-                        setJsonString(JSON.stringify(message));
-                        // console.log(JSON.stringify(message));
+                    case 'Done': {
+                        console.log("WebSocket message received:", message);
+                        let jsonStringified = null;
+                        try {
+                            jsonStringified = JSON.stringify(message);
+                        } catch (err) {
+                            console.error("Error stringifying message:", err, message);
+                        }
+                        setJsonString(prev => {
+                            console.log("Previous jsonString:", prev);
+                            console.log("New jsonStringified:", jsonStringified);
+                            return jsonStringified;
+                        });
                         setConnectionDone(true);
                         setTryConnection(false);
                         setIsConnectWebsocket(false);
                         setState('PROGRESSDONE');
                         ws.current.close();
                         break;
-                    case 'Error':
-                        setJsonString(JSON.stringify(message));
-                        // console.log(JSON.stringify(message));
+                    }
+                    case 'Error': {
+                        let jsonStringified = null;
+                        try {
+                            jsonStringified = JSON.stringify(message);
+                        } catch (err) {
+                            console.error("Error stringifying message:", err, message);
+                        }
+                        setJsonString(prev => {
+                            console.log("Previous jsonString:", prev);
+                            console.log("New jsonStringified:", jsonStringified);
+                            return jsonStringified;
+                        });
                         setTryConnection(false);
                         setIsConnectWebsocket(false);
                         setErrorMessage(message['statustext']);
                         setState('ERROR');
                         ws.current.close();
                         break;
+                    }
                 }
 
 
@@ -224,7 +245,7 @@ export default function App() {
                 </>
             }
         </>,
-        PROGRESSDONE: <Progress changeState={updateState} currentState={state} tryConnection={tryConnection} websocketMessage={websocketMessage} fileName={fileName} connectionDone={connectionDone} />,
+        PROGRESSDONE: <Progress changeState={updateState} currentState={state} tryConnection={tryConnection} websocketMessage={websocketMessage} fileName={fileName} connectionDone={connectionDone} jsonString={jsonString} />,
         PREVIEW: <PreviewQuestions changeState={updateState} jsonString={jsonString} changeZipfileName={updateZipfileName} changeLinkHref={updateLinkHref} changeErrorMessage={updateErrorMessage} />,
         DOWNLOAD: <DownloadScorm changeState={updateState} zipfileName={zipfileName} linkHref={linkHref} />,
         ERROR: <Error changeState={updateState} errorMessage={errorMessage} />,
