@@ -26,44 +26,66 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
-function PreviewQuestions(props) {
-    const [openSummary, setOpenSummary] = useState(false);
-    const [openAccordion, setOpenAccordion] = useState(false);
-    const parsedJson = JSON.parse(props.jsonString)["data"];
-    let listStyle;
-    switch (parsedJson.enumeration) {
-        case 1:
-            listStyle = 'decimal';
-            break;
-        case 2:
-            listStyle = 'lower-roman';
-            break;
-        case 3:
-            listStyle = 'upper-roman';
-            break;
-        case 4:
-            listStyle = 'lower-alpha';
-            break;
-        case 5:
-            listStyle = 'upper-alpha';
-            break;
-        case 6:
-            listStyle = 'none';
-            break;
-        default:
-            listStyle = 'lower-alpha';
-            break;
-    }
-    // let totalSections = 0;
-    let totalQuestions = 0;
-    let isStart = true;
-    parsedJson.sections.forEach((section, sectionIndex) => {
-        // if (section.is_main_content == false) {
-        //     totalSections += 1;
-        // }
-        totalQuestions += section.questions.length;
+// Helper component for rendering section accordions
+function SectionAccordion({ section, sectionIndex, expandedAccordions, expandQuestions, renderQuestion, listStyle, color, setExpandedAccordions }) {
+    return (
+        <div className={color ? "sub-section-wrapper accordion-wrapper" : "root-section-wrapper accordion-wrapper"} key={"wrapper-section-" + (sectionIndex + 1)}>
+            <Button
+                variant="contained"
+                className="accordion-side-button"
+                {...(color ? { color: "info" } : {})}
+                onClick={() => expandQuestions(sectionIndex, section.questions.length)}
+                aria-label={
+                    expandedAccordions[sectionIndex] && expandedAccordions[sectionIndex].size === section.questions.length
+                        ? 'Collapse All'
+                        : 'Expand All'
+                }
+            >
+            </Button>
+            <div className="accordion-inner-wrapper">
+                {section.questions.map((question, questionIndex) => (
+                    <Fragment key={"wrapper-question-" + (questionIndex + 1)}>
+                        <Accordion
+                            className={"wrapper-question-accordion"}
+                            expanded={!!(expandedAccordions[sectionIndex] && expandedAccordions[sectionIndex].has(questionIndex))}
+                            onChange={() => {
+                                setExpandedAccordions(prev => {
+                                    const newExpanded = { ...prev };
+                                    if (!newExpanded[sectionIndex]) newExpanded[sectionIndex] = new Set();
+                                    if (newExpanded[sectionIndex].has(questionIndex)) {
+                                        newExpanded[sectionIndex].delete(questionIndex);
+                                    } else {
+                                        newExpanded[sectionIndex].add(questionIndex);
+                                    }
+                                    if (newExpanded[sectionIndex].size === 0) delete newExpanded[sectionIndex];
+                                    return { ...newExpanded };
+                                });
+                            }}
+                        >
+                            <QuestionHeader question={question} />
+                            {renderQuestion(question, questionIndex, listStyle, sectionIndex)}
+                        </Accordion>
+                    </Fragment>
+                ))}
+            </div>
+        </div>
+    );
+}
 
-    });
+function PreviewQuestions(props) {
+    // Helper for expand/collapse all aria-label
+    const getExpandCollapseLabel = (sectionIndex, questionsLength) =>
+        expandedAccordions[sectionIndex] && expandedAccordions[sectionIndex].size === questionsLength
+            ? 'Collapse All'
+            : 'Expand All';
+    const [openSummary, setOpenSummary] = useState(false);
+    const [expandedAccordions, setExpandedAccordions] = useState({});
+    const parsedJson = JSON.parse(props.jsonString)["data"];
+    const listStyles = [null, 'decimal', 'lower-roman', 'upper-roman', 'lower-alpha', 'upper-alpha', 'none'];
+    const listStyle = listStyles[parsedJson.enumeration] || 'lower-alpha';
+    // let totalSections = 0;
+    let isStart = true;
+    const totalQuestions = parsedJson.sections.reduce((sum, section) => sum + section.questions.length, 0);
 
     const [questionsPerPage, setQuestionsPerPage] = useState(10);
     const [totalPage, settotalPage] = useState(Math.ceil(totalQuestions / questionsPerPage));
@@ -79,77 +101,53 @@ function PreviewQuestions(props) {
     };
 
     const processQuestions = (nextFirstQuestionIndex, nextLastQuestionIndex) => {
-        let newJson = { ...parsedJson };
-        let sections = newJson.sections;
-        let newTotalQuestions = totalQuestions;
-        for (let sectionIndex = sections.length - 1; sectionIndex >= 0; sectionIndex--) {
-
-
-            let newCurrentQuestions = sections[sectionIndex].questions;
-            for (let questionIndex = newCurrentQuestions.length - 1; questionIndex >= 0; questionIndex--) {
-                newTotalQuestions--;
-                if (newTotalQuestions >= nextFirstQuestionIndex && newTotalQuestions <= nextLastQuestionIndex) {
-                    // console.log(newTotalQuestions);
-                } else {
-                    newCurrentQuestions.splice(questionIndex, 1);
-                }
-            }
-            if (newCurrentQuestions.length === 0) {
-                sections.splice(sectionIndex, 1);
-            }
-        }
-
-        return newJson;
+        let questionCounter = 0;
+        const newSections = parsedJson.sections
+            .map(section => {
+                const filteredQuestions = section.questions.filter(() => {
+                    const inRange = questionCounter >= nextFirstQuestionIndex && questionCounter <= nextLastQuestionIndex;
+                    questionCounter++;
+                    return inRange;
+                });
+                return filteredQuestions.length > 0 ? { ...section, questions: filteredQuestions } : null;
+            })
+            .filter(Boolean);
+        return { ...parsedJson, sections: newSections };
     };
 
-    const renderQuestion = (question, index, listStyle) => {
-        if (!question.error) {
-            let currentNumber = index + 1;
-            // eslint-disable-next-line
-            switch (question.questiontype) {
-                case 'MC':
-                    return <MultipleChoice question={question} key={"question-" + currentNumber} questionIndex={currentNumber} listStyle={listStyle} />;
-                case 'TF':
-                    return <TrueFalse question={question} key={"question-" + currentNumber} questionIndex={currentNumber} listStyle={listStyle} />;
-                case 'FIB':
-                case 'FMB':
-                    return <FillInBlanks question={question} key={"question-" + currentNumber} questionIndex={currentNumber} />;
-                case 'MS':
-                case 'MR':
-                    return <MultiSelect question={question} key={"question-" + currentNumber} questionIndex={currentNumber} listStyle={listStyle} />;
-                case 'MAT':
-                case 'MT':
-                    return <Matching question={question} key={"question-" + currentNumber} questionIndex={currentNumber} />;
-                case 'ORD':
-                    return <Ordering question={question} key={"question-" + currentNumber} questionIndex={currentNumber} />;
-                case 'WR':
-                case 'E':
-                    return <WrittenResponse question={question} key={"question-" + currentNumber} />;
-            }
-        }
+    const renderQuestion = (question, index, listStyle, sectionIndex) => {
+        if (question.error) return null;
+        const currentNumber = index + 1;
+        const typeMap = {
+            MC: (q, i) => <MultipleChoice question={q} key={"question-" + i} questionIndex={i} listStyle={listStyle} />,
+            TF: (q, i) => <TrueFalse question={q} key={"question-" + i} questionIndex={i} listStyle={listStyle} />,
+            FIB: (q, i) => <FillInBlanks question={q} key={"question-" + i} questionIndex={i} />,
+            FMB: (q, i) => <FillInBlanks question={q} key={"question-" + i} questionIndex={i} />,
+            MS: (q, i) => <MultiSelect question={q} key={"question-" + i} questionIndex={i} listStyle={listStyle} />,
+            MR: (q, i) => <MultiSelect question={q} key={"question-" + i} questionIndex={i} listStyle={listStyle} />,
+            MAT: (q, i) => <Matching question={q} key={"question-" + i} questionIndex={i} />,
+            MT: (q, i) => <Matching question={q} key={"question-" + i} questionIndex={i} />,
+            ORD: (q, i) => <Ordering question={q} key={"question-" + i} questionIndex={i} />,
+            WR: (q, i) => <WrittenResponse question={q} key={"question-" + i} />,
+            E: (q, i) => <WrittenResponse question={q} key={"question-" + i} />,
+        };
+        return typeMap[question.questiontype]?.(question, currentNumber) || null;
     };
 
-    const expandQuestions = (event) => {
-        let buttonEl = event.target;
-        let nextSibling = buttonEl.nextElementSibling; // .question-wrapper
-        let accordions = nextSibling.getElementsByClassName("wrapper-question-accordion");
-
-        if (openAccordion) {
-            for (let accordion of accordions) {
-                if (accordion.classList.contains("Mui-expanded")) {
-                    accordion.children[0].click();
-                }
+    // Expand/collapse all accordions in a section
+    const expandQuestions = (sectionIndex, questionsLength) => {
+        setExpandedAccordions(prev => {
+            const isAllExpanded = prev[sectionIndex] && prev[sectionIndex].size === questionsLength;
+            const newExpanded = { ...prev };
+            if (isAllExpanded) {
+                // Collapse all
+                newExpanded[sectionIndex] = new Set();
+            } else {
+                // Expand all
+                newExpanded[sectionIndex] = new Set(Array.from({ length: questionsLength }, (_, i) => i));
             }
-            setOpenAccordion(false);
-        } else {
-            for (let accordion of accordions) {
-                if (!accordion.classList.contains("Mui-expanded")) {
-                    accordion.children[0].click();
-                }
-            }
-            setOpenAccordion(true);
-        }
-
+            return newExpanded;
+        });
     };
 
     const onChangeQuestionPerPage = (event) => {
@@ -163,15 +161,7 @@ function PreviewQuestions(props) {
         if (currentPage > newTotalPage) {
             setCurrentPage(1);
         }
-
-        let accordionSummary = document.querySelectorAll('.accordion-inner-wrapper>.MuiAccordion-root>.MuiAccordionSummary-root');
-        var summaryArray = [...accordionSummary];
-        summaryArray.forEach(summary => {
-            if (summary.getAttribute("aria-expanded") === "true") {
-                summary.click();
-            }
-        });
-        setOpenAccordion(false);
+        setExpandedAccordions({});
     };
 
     const onChangePagination = (event, selectedPage) => {
@@ -183,19 +173,12 @@ function PreviewQuestions(props) {
         } else {
             setCurrentPage(1);
         }
-
-        let accordionSummary = document.querySelectorAll('.accordion-inner-wrapper>.MuiAccordion-root>.MuiAccordionSummary-root');
-        var summaryArray = [...accordionSummary];
-        summaryArray.forEach(summary => {
-            if (summary.getAttribute("aria-expanded") === "true") {
-                summary.click();
-            }
-        });
-        setOpenAccordion(false);
+        setExpandedAccordions({});
     };
 
     useEffect(() => {
         setCurrentQuestions(processQuestions(currentFirstQuestionIndex, currentLastQuestionIndex));
+        setExpandedAccordions({}); // Reset expanded accordions on page change
         document.getElementsByClassName("main-content-container")[0].scrollIntoView();
 
         const reloadMathjax = () => {
@@ -214,14 +197,13 @@ function PreviewQuestions(props) {
             }
         };
 
-
         if (document.getElementsByTagName("math")) {
             reloadMathjax();
         }
         return () => {
             removeMathjax();
         };
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [questionsPerPage, currentPage, isStart]);
 
     useEffect(() => {
@@ -269,7 +251,7 @@ function PreviewQuestions(props) {
         if (isPackage) {
             sendJson();
         }
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [isPackage]);
 
 
@@ -284,22 +266,16 @@ function PreviewQuestions(props) {
                 {
                     currentQuestions.sections.map((section, sectionIndex) => (
                         section.is_main_content ?
-                            <div className="root-section-wrapper accordion-wrapper" key={"wrapper-section-" + (sectionIndex + 1)}>
-                                <Button variant="contained" className="accordion-side-button" onClick={expandQuestions}></Button>
-                                <div className="accordion-inner-wrapper">
-                                    {
-                                        section.questions.map((question, questionIndex) => (
-                                            <Fragment key={"wrapper-root-question-" + (questionIndex + 1)}>
-                                                <Accordion className={"wrapper-question-accordion"}>
-                                                    <QuestionHeader question={question} />
-                                                    {renderQuestion(question, questionIndex, listStyle)}
-                                                </Accordion>
-
-                                            </Fragment>
-                                        ))
-                                    }
-                                </div>
-                            </div>
+                            <SectionAccordion
+                                section={section}
+                                sectionIndex={sectionIndex}
+                                expandedAccordions={expandedAccordions}
+                                expandQuestions={expandQuestions}
+                                renderQuestion={renderQuestion}
+                                listStyle={listStyle}
+                                setExpandedAccordions={setExpandedAccordions}
+                                key={"wrapper-section-" + (sectionIndex + 1)}
+                            />
                             :
                             <Container className='section-container' maxWidth='md' key={"wrapper-section-" + (sectionIndex + 1)}>
                                 <Typography className="section-name" variant="h3">
@@ -315,25 +291,17 @@ function PreviewQuestions(props) {
                                         </Paper>
                                     </Grid>
                                 }
-                                <div className="sub-section-wrapper accordion-wrapper">
-
-                                    <Button variant="contained" className="accordion-side-button" color="info" onClick={expandQuestions}></Button>
-                                    <div className="accordion-inner-wrapper">
-                                        {
-                                            section.questions.map((question, questionIndex) => (
-                                                <Fragment key={"wrapper-section-question-" + (questionIndex + 1)}>
-                                                    <Accordion className={"wrapper-question-accordion"}>
-                                                        <QuestionHeader question={question} />
-                                                        {renderQuestion(question, questionIndex, listStyle)}
-                                                    </Accordion>
-
-                                                </Fragment>
-                                            ))
-                                        }
-                                    </div>
-                                </div>
+                                <SectionAccordion
+                                    section={section}
+                                    sectionIndex={sectionIndex}
+                                    expandedAccordions={expandedAccordions}
+                                    expandQuestions={expandQuestions}
+                                    renderQuestion={renderQuestion}
+                                    listStyle={listStyle}
+                                    color="info"
+                                    setExpandedAccordions={setExpandedAccordions}
+                                />
                             </Container>
-
                     ))
                 }
             </div>
@@ -344,7 +312,7 @@ function PreviewQuestions(props) {
                         labelId={"question-limit-label"}
                         defaultValue={10}
                         onChange={onChangeQuestionPerPage}
-                    >   
+                    >
                         <MenuItem value={1}>1 per page</MenuItem>
                         <MenuItem value={5}>5 per page</MenuItem>
                         <MenuItem value={10}>10 per page</MenuItem>
