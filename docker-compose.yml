@@ -53,7 +53,7 @@ services:
       - |
         npm install
         npm run build
-    image: node:18.16-alpine
+    image: node:24.8.0-alpine3.22
     working_dir: /code/frontend
     volumes:
       - .:/code
