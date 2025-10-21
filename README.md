@@ -2,7 +2,7 @@
 
 Frontend of the [Qcon](https://qcon.ltc.bcit.ca) service. Requires the [qcon-api](https://qcon-api.ltc.bcit.ca) processor engine to work correctly.
 
-See the [Qcon User Guide](https://qcon-guide.ltc.bcit.ca).
+See the [Qcon User Guide](https://qcon-guide.ltc.bcit.ca) for more information.
 
 ## Developing
 
