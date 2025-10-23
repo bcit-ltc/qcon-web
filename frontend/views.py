@@ -29,7 +29,7 @@ def index(request):
     request.session.set_test_cookie()
 
     context = {
-        'version': settings.GIT_TAG,
+        'version': settings.APP_VERSION,
     }
     logger.info(f"clientIp: {request.get_host()}")
 
