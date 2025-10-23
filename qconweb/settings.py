@@ -40,10 +40,10 @@ def get_secret(name: str, default: str = None, required: bool = False, subdirect
 
 API_HOST = os.getenv('API_HOST')
 API_PORT = os.getenv('API_PORT')
-API_KEY = get_secret('API_KEY', required=True)
+API_KEY = get_secret('API_KEY', subdirectory='api-key', required=True)
+POSTGRES_HOST = get_secret('POSTGRES_HOST', subdirectory='db-credentials', required=True)
+
 APP_VERSION = os.getenv('APP_VERSION')
-# IMAGE_TAG = os.getenv('IMAGE_TAG')
-# IMAGE_TITLE = os.getenv('IMAGE_TITLE')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,7 +53,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = '33xu$zgkit5bq0o4fg8y00^ar)tt8#srvg^go$^m@z3l&sxti3'
-SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+SECRET_KEY = get_secret("DJANGO_SECRET_KEY", subdirectory='app-internal-credentials', required=True)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False) == 'true'
