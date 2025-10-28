@@ -13,7 +13,7 @@ class FrontendConfig(AppConfig):
         if 'runserver' in sys.argv or 'qconweb.asgi:application' in sys.argv:
             logger.info("API_HOST: " + os.environ.get('API_HOST'))
             logger.info("API_PORT: " + os.environ.get('API_PORT'))
-            logger.info("GIT_TAG: " + os.environ.get('GIT_TAG'))
+            logger.info("APP_VERSION: " + os.environ.get('APP_VERSION'))
             logger.info("IMAGE_TAG: " + os.environ.get('IMAGE_TAG'))
             logger.info("IMAGE_TITLE: " + os.environ.get('IMAGE_TITLE'))
             logger.info("qconweb has started")

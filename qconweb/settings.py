@@ -16,12 +16,34 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Secrets loader: prefer files in /etc/secrets/{name}, fall back to env vars
+SECRETS_DIR = Path("/etc/secrets")
+
+def get_secret(name: str, default: str = None, required: bool = False, subdirectory: str = None) -> str:
+    """
+    Load a secret from /etc/secrets/{name} if present, otherwise from environment.
+    Strips trailing whitespace. If required and missing, raise an error.
+    """
+    base_dir = SECRETS_DIR / subdirectory if subdirectory else SECRETS_DIR
+    file_path = base_dir / name
+    if file_path.exists():
+        val = file_path.read_text(encoding="utf-8").strip()
+    else:
+        val = os.getenv(name, default)
+
+    if required and (val is None or val == ""):
+        raise RuntimeError(
+            f"Missing required secret: {name} (file {file_path} or env var {name})"
+        )
+
+    return val
+
 API_HOST = os.getenv('API_HOST')
 API_PORT = os.getenv('API_PORT')
-API_KEY = os.environ.get('API_KEY')
-GIT_TAG = os.getenv('GIT_TAG')
-IMAGE_TAG = os.getenv('IMAGE_TAG')
-IMAGE_TITLE = os.getenv('IMAGE_TITLE')
+API_KEY = get_secret('API_KEY', subdirectory='api-key', required=True)
+POSTGRES_HOST = get_secret('POSTGRES_HOST', subdirectory='db-credentials', required=True)
+
+APP_VERSION = os.getenv('APP_VERSION')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,7 +53,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = '33xu$zgkit5bq0o4fg8y00^ar)tt8#srvg^go$^m@z3l&sxti3'
-SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+SECRET_KEY = get_secret("DJANGO_SECRET_KEY", subdirectory='app-internal-credentials', required=True)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False) == 'true'
@@ -105,9 +127,9 @@ ASGI_APPLICATION = 'qconweb.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'NAME': get_secret("POSTGRES_DB", subdirectory='db-credentials', required=True),
+        'USER': get_secret("POSTGRES_USER", subdirectory='db-credentials', required=True),
+        'PASSWORD': get_secret("POSTGRES_PASSWORD", subdirectory='db-credentials', required=True),
         'HOST': POSTGRES_HOST,
         'PORT': 5432,
     }

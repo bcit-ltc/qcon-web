@@ -24,9 +24,12 @@ services:
       API_PORT: 8000
       API_KEY: 1234567890
       DJANGO_SECRET_KEY: notveryS3cret
-      GIT_TAG: 0.0.1
+      APP_VERSION: 0.0.1
       IMAGE_TAG: 0.0.1
       IMAGE_TITLE: qcon-web
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
       - .:/code
       - data:/code/frontend/build/:ro
