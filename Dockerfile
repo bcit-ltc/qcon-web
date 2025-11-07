@@ -19,7 +19,7 @@ RUN set -ex; \
 ## Frontend Builder
 # FROM registry.ltc.bcit.ca/ltc-infrastructure/images/qcon-web-frontend-builder AS qcon-web-frontend-builder
 
-FROM node:24.8.0-alpine3.22 AS qcon-web-frontend-builder
+FROM node:24.8.1-alpine3.22 AS qcon-web-frontend-builder
 
 WORKDIR /app
 
@@ -39,12 +39,13 @@ RUN npm run build
 ## Release
 FROM python:3.11-alpine AS release
 
-LABEL maintainer courseproduction@bcit.ca
+LABEL maintainer=courseproduction@bcit.ca
+LABEL org.opencontainers.image.source=https://github.com/bcit-ltc/qcon-web
 
 WORKDIR /code
 
-ENV PYTHONUNBUFFERED 1
-ENV PATH /code:/opt/venv/bin:$PATH
+ENV PYTHONUNBUFFERED=1
+ENV PATH=/code:/opt/venv/bin:$PATH
 ARG VERSION
 ENV VERSION=${VERSION:-0.0.0}
 
