@@ -34,6 +34,7 @@ dist/
 build/
 out/
 coverage/
+static/
 
 # Local scratch / caches (scoped to repo root)
 tmp/

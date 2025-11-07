@@ -16,6 +16,14 @@ Thumbs.db
 .gitattributes
 .github/
 
+# Python
+__pycache__
+*.py[cod]
+*.pyo
+.Python
+env
+.venv
+
 # Node.js
 node_modules
 npm-debug.log*
@@ -34,7 +42,7 @@ charts/**/.tgz
 .helmignore
 
 # Secrets / Env
-.env
+# .env
 .env.*
 !.env.example   # keep template/example
 

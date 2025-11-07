@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Qcon-web
 
 Frontend of the [Qcon](https://qcon.ltc.bcit.ca) service. Requires the [qcon-api](https://qcon-api.ltc.bcit.ca) processor engine to work correctly.

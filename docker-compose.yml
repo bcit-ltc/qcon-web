@@ -5,7 +5,8 @@ services:
   postgresweb:
     image: postgres
     environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: qcon-web
     networks:
       qcon-network:
       
@@ -15,36 +16,38 @@ services:
       context: .
       args:
         - VERSION=dev
-    command:
-      - /bin/sh
-      - -c
-      - |
-        python manage.py runserver 0.0.0.0:9000
+    command: python manage.py runserver 0.0.0.0:9000
     environment:
       DEBUG: true
       API_HOST: api.local
       API_PORT: 8000
-      API_KEY: 1234567890
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: localhost
+      POSTGRES_DB: qcon-web
+      POSTGRES_USER: postgres
+      API_KEY: 01234567890
       DJANGO_SECRET_KEY: notveryS3cret
       APP_VERSION: 0.0.1
       IMAGE_TAG: 0.0.1
-      IMAGE_TITLE: qcon-web
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      IMAGE_NAME: qcon-web
+
     volumes:
       - .:/code
       - data:/code/frontend/build/:ro
+
     ports:
       - 9000:9000
+
     networks:
       - qcon-network
+
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9000 || exit 1"]
       interval: 1m30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
     depends_on:
       postgresweb:
         condition: service_started
@@ -81,7 +84,7 @@ services:
 
 networks:
   qcon-network:
-    external: true
+    # external: true
     name: qcon-network
 
 volumes:

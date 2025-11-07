@@ -15,7 +15,7 @@ class FrontendConfig(AppConfig):
             logger.info("API_PORT: " + os.environ.get('API_PORT'))
             logger.info("APP_VERSION: " + os.environ.get('APP_VERSION'))
             logger.info("IMAGE_TAG: " + os.environ.get('IMAGE_TAG'))
-            logger.info("IMAGE_TITLE: " + os.environ.get('IMAGE_TITLE'))
+            logger.info("IMAGE_NAME: " + os.environ.get('IMAGE_NAME'))
             logger.info("qconweb has started")
             
             if 'runserver' in sys.argv:

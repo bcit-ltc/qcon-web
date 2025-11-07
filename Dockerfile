@@ -19,7 +19,7 @@ RUN set -ex; \
 ## Frontend Builder
 # FROM registry.ltc.bcit.ca/ltc-infrastructure/images/qcon-web-frontend-builder AS qcon-web-frontend-builder
 
-FROM node:24.8.1-alpine3.22 AS qcon-web-frontend-builder
+FROM node:25.1.0-alpine3.22 AS qcon-web-frontend-builder
 
 WORKDIR /app
 
