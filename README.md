@@ -8,7 +8,11 @@ See the [Qcon User Guide](https://qcon-guide.ltc.bcit.ca) for more information.
 
 1. Clone and spin up a `docker compose` environment for the backend, `qcon-api`.
 
-1. Run `docker compose up --build`. After the console reports that the service `qcon-web-nginx-unprivileged` has `... start worker process XX...`, navigate to http://localhost:8080/.
+1. Run `docker compose up --build`.
+   
+   After the console reports that the service `qcon-web-nginx-unprivileged` has `... start worker process XX...`
+
+   Navigate to http://localhost:8080/
 
 ## License
 
