@@ -17,11 +17,11 @@ deploy:
         namespace: app
         createNamespace: true
         setValues:
-          frontend.image.registry: registry.localhost:5000
-          frontend.image.repository: app
+          # frontend.image.registry: registry.localhost:5000
+          # frontend.image.repository: app
         setValueTemplates:
-          # frontend.image.registry: "{{.IMAGE_DOMAIN_app}}"
-          # frontend.image.repository: "{{.IMAGE_REPO_NO_DOMAIN_app}}"
+          frontend.image.registry: "{{.IMAGE_DOMAIN_app}}"
+          frontend.image.repository: "{{.IMAGE_REPO_NO_DOMAIN_app}}"
           frontend.image.tag: "{{.IMAGE_TAG_app}}"
     hooks:
       before:

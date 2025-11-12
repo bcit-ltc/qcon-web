@@ -99,9 +99,15 @@ check:
 	  fi; \
 	  echo ""; \
 	  if [ -z "$${GITHUB_PAT:-}" ]; then \
-	    echo "⚠️  GITHUB_PAT not set (required for private repos/packages)"; \
+	    echo "⚠️  GITHUB_PAT not set (required for private repos/packages) set it with: export GITHUB_PAT={Your Github Token with read permissions}"; \
 	  else \
 	    echo "✅ GITHUB_PAT is set"; \
+	  fi; \
+	  echo ""; \
+	  if [ -z "$${SKAFFOLD_ENV_FILE:-}" ]; then \
+	    echo "⚠️  SKAFFOLD_ENV_FILE not set (required for skaffold dev, allow direnv inside codespace)"; \
+	  else \
+	    echo "✅ SKAFFOLD_ENV_FILE is set"; \
 	  fi; \
 	  echo ""; \
 	  echo "Env vars:"; \

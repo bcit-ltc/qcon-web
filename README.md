@@ -15,6 +15,7 @@ See the [Qcon User Guide](https://qcon-guide.ltc.bcit.ca) for more information.
 
    Navigate to [http://localhost:8080/](http://localhost:8080)
 
+<<<<<<< Updated upstream
 
 ### Commands for devcontainer
 
@@ -59,6 +60,25 @@ See the [Qcon User Guide](https://qcon-guide.ltc.bcit.ca) for more information.
    skaffold dev
    ```
 
+=======
+### Commands for devcontainer
+
+make sure to allow vscode to read .envrc
+run make help to see the options
+
+```console
+1. run make check
+
+make check
+2. make cluster
+3. helm template
+after making changes to app chart copy it over to helm-chart repo
+increment version number on helm chart repo
+4. docker compose up ( to make sure app itself works )
+5. check helm chart values file to compare with docker compose
+6. skaffold dev
+```
+>>>>>>> Stashed changes
 
 ## Support
 
