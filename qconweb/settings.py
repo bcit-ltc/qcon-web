@@ -41,7 +41,7 @@ def get_secret(name: str, default: str = None, required: bool = False, subdirect
 API_HOST = os.getenv('API_HOST')
 API_PORT = os.getenv('API_PORT')
 API_KEY = get_secret('API_KEY', subdirectory='api-key', required=True)
-POSTGRES_HOST = get_secret('POSTGRES_HOST', subdirectory='db-credentials', required=True)
+# POSTGRES_HOST = get_secret('POSTGRES_HOST', subdirectory='db-credentials', required=True)
 
 APP_VERSION = os.getenv('APP_VERSION')
 
@@ -59,9 +59,7 @@ SECRET_KEY = get_secret("DJANGO_SECRET_KEY", subdirectory='app-internal-credenti
 DEBUG = os.getenv('DEBUG', False) == 'true'
 
 LOGGING_LEVEL = 'INFO'
-POSTGRES_HOST = 'localhost'
 if DEBUG:
-    POSTGRES_HOST = 'postgresweb'
     LOGGING_LEVEL = 'DEBUG'
 
 ALLOWED_HOSTS = ['*']
@@ -73,7 +71,7 @@ CSRF_COOKIE_HTTPONLY = True
 
 INSTALLED_APPS = [
     'channels',
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -91,10 +89,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    # 'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # 'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -126,12 +124,13 @@ ASGI_APPLICATION = 'qconweb.asgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': get_secret("POSTGRES_DB", subdirectory='db-credentials', required=True),
-        'USER': get_secret("POSTGRES_USER", subdirectory='db-credentials', required=True),
-        'PASSWORD': get_secret("POSTGRES_PASSWORD", subdirectory='db-credentials', required=True),
-        'HOST': POSTGRES_HOST,
-        'PORT': 5432,
+        'ENGINE': 'django.db.backends.dummy'
+        # 'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': get_secret("POSTGRES_DB", subdirectory='db-credentials', required=True),
+        # 'USER': get_secret("POSTGRES_USER", subdirectory='db-credentials', required=True),
+        # 'PASSWORD': get_secret("POSTGRES_PASSWORD", subdirectory='db-credentials', required=True),
+        # 'HOST': POSTGRES_HOST,
+        # 'PORT': 5432,
     }
 }
 
@@ -255,4 +254,4 @@ CHANNEL_LAYERS = {
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_HTTPONLY = True
-CSRF_USE_SESSIONS = True
+CSRF_USE_SESSIONS = False

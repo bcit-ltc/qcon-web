@@ -2,13 +2,13 @@ name: ${APP_NAME:-qcon-web}
 
 services:
 
-  postgresweb:
-    image: postgres
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: qcon-web
-    networks:
-      qcon-network:
+  # postgresweb:
+  #   image: postgres
+  #   environment:
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: qcon-web
+  #   networks:
+  #     qcon-network:
       
   app:
     image: qcon-web
@@ -21,10 +21,10 @@ services:
       DEBUG: true
       API_HOST: api.local
       API_PORT: 8000
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_HOST: localhost
-      POSTGRES_DB: qcon-web
-      POSTGRES_USER: postgres
+      # POSTGRES_PASSWORD: postgres
+      # POSTGRES_HOST: localhost
+      # POSTGRES_DB: qcon-web
+      # POSTGRES_USER: postgres
       API_KEY: 01234567890
       DJANGO_SECRET_KEY: notveryS3cret
       APP_VERSION: 0.0.1
@@ -49,8 +49,8 @@ services:
       start_period: 40s
 
     depends_on:
-      postgresweb:
-        condition: service_started
+      # postgresweb:
+      #   condition: service_started
       frontend-builder:
         condition:  service_completed_successfully
 
