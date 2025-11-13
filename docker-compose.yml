@@ -21,6 +21,7 @@ services:
       DEBUG: true
       API_HOST: api.local
       API_PORT: 8000
+      AUTOBAHN_USE_NVX: "0"
       # POSTGRES_PASSWORD: postgres
       # POSTGRES_HOST: localhost
       # POSTGRES_DB: qcon-web
@@ -84,7 +85,7 @@ services:
 
 networks:
   qcon-network:
-    # external: true
+    external: true
     name: qcon-network
 
 volumes:
