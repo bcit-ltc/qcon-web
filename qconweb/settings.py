@@ -41,7 +41,7 @@ def get_secret(name: str, default: str = None, required: bool = False, subdirect
 API_HOST = os.getenv('API_HOST')
 API_PORT = os.getenv('API_PORT')
 API_KEY = get_secret('API_KEY', subdirectory='api-key', required=True)
-POSTGRES_HOST = get_secret('POSTGRES_HOST', subdirectory='db-credentials', required=True)
+# POSTGRES_HOST = get_secret('POSTGRES_HOST', subdirectory='db-credentials', required=True)
 
 APP_VERSION = os.getenv('APP_VERSION')
 
@@ -56,24 +56,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = get_secret("DJANGO_SECRET_KEY", subdirectory='app-internal-credentials', required=True)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', False) == 'true'
+DEBUG = True
 
 LOGGING_LEVEL = 'INFO'
-POSTGRES_HOST = 'localhost'
 if DEBUG:
-    POSTGRES_HOST = 'postgresweb'
     LOGGING_LEVEL = 'DEBUG'
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_USE_SESSIONS = True
+CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = True
 
 # Application definition
 
 INSTALLED_APPS = [
     'channels',
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -94,8 +92,8 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    # 'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # 'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -126,12 +124,13 @@ ASGI_APPLICATION = 'qconweb.asgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': get_secret("POSTGRES_DB", subdirectory='db-credentials', required=True),
-        'USER': get_secret("POSTGRES_USER", subdirectory='db-credentials', required=True),
-        'PASSWORD': get_secret("POSTGRES_PASSWORD", subdirectory='db-credentials', required=True),
-        'HOST': POSTGRES_HOST,
-        'PORT': 5432,
+        'ENGINE': 'django.db.backends.dummy'
+        # 'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': get_secret("POSTGRES_DB", subdirectory='db-credentials', required=True),
+        # 'USER': get_secret("POSTGRES_USER", subdirectory='db-credentials', required=True),
+        # 'PASSWORD': get_secret("POSTGRES_PASSWORD", subdirectory='db-credentials', required=True),
+        # 'HOST': POSTGRES_HOST,
+        # 'PORT': 5432,
     }
 }
 
@@ -226,14 +225,29 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'ERROR',
+            'level': 'DEBUG' if DEBUG else 'ERROR',
             'propagate': False,
         },
         'frontend': {
             'handlers': ['console','console_dev'],
             'level': LOGGING_LEVEL,
             'propagate': False,
-        }
+        },
+        'channels': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'django.channels': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'daphne': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
     },
 }
 
@@ -244,15 +258,41 @@ REST_FRAMEWORK = {
     ],
 }
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+if DEBUG:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
         },
-    },
-}
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [("127.0.0.1", 6379)],
+            },
+        },
+    }
+
+# Cache configuration: LocMem in DEBUG, Redis in production
+if DEBUG:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": "redis://127.0.0.1:6379/1",
+        }
+    }
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_HTTPONLY = True
-CSRF_USE_SESSIONS = True
+CSRF_USE_SESSIONS = False
+
+# Use cache-backed sessions (no relational DB)
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
