@@ -56,7 +56,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = get_secret("DJANGO_SECRET_KEY", subdirectory='app-internal-credentials', required=True)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv('DEBUG', False) == 'true'
 
 LOGGING_LEVEL = 'INFO'
 if DEBUG:
@@ -125,12 +125,6 @@ ASGI_APPLICATION = 'qconweb.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.dummy'
-        # 'ENGINE': 'django.db.backends.postgresql',
-        # 'NAME': get_secret("POSTGRES_DB", subdirectory='db-credentials', required=True),
-        # 'USER': get_secret("POSTGRES_USER", subdirectory='db-credentials', required=True),
-        # 'PASSWORD': get_secret("POSTGRES_PASSWORD", subdirectory='db-credentials', required=True),
-        # 'HOST': POSTGRES_HOST,
-        # 'PORT': 5432,
     }
 }
 
@@ -186,11 +180,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'temp/')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
-    'filters': {
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        },
-    },
+    # 'filters': {
+    #     'require_debug_true': {
+    #         '()': 'django.utils.log.RequireDebugTrue',
+    #     },
+    # },
     'formatters': {
         'verbose': {
             'format':
@@ -212,14 +206,6 @@ LOGGING = {
             'level': LOGGING_LEVEL,
             'class': 'logging.StreamHandler',
             'formatter': 'custom'
-        },
-        'console_dev': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'dev.log',
-            'formatter': 'custom',
-            'maxBytes': 1024 * 1024 * 10,  # 10 mb
-            'filters': ['require_debug_true']
         }
     },
     'loggers': {
@@ -229,7 +215,7 @@ LOGGING = {
             'propagate': False,
         },
         'frontend': {
-            'handlers': ['console','console_dev'],
+            'handlers': ['console'],
             'level': LOGGING_LEVEL,
             'propagate': False,
         },
