@@ -16,9 +16,6 @@ services:
       AUTOBAHN_USE_NVX: "0"
       API_KEY: 01234567890
       DJANGO_SECRET_KEY: notveryS3cret
-      APP_VERSION: 0.0.1
-      IMAGE_TAG: 0.0.1
-      IMAGE_NAME: qcon-web
 
     volumes:
       - .:/code
