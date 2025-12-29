@@ -167,7 +167,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/var/www/html/static/'
+STATIC_ROOT = '/code/frontend/build/static/'
 
 STATICFILES_DIRS = [
     "/code/frontend/build/static",
