@@ -20,12 +20,13 @@ services:
     volumes:
       - .:/code
       - data:/code/frontend/build/:ro
+      - staticfiles:/code/staticfiles:rw
 
     ports:
       - 9000:9000
 
-    networks:
-      - qcon-network
+    # networks:
+    #   - qcon-network
 
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9000 || exit 1"]
@@ -56,6 +57,7 @@ services:
     volumes:
       - ./conf.d/local.conf:/etc/nginx/conf.d/default.conf
       - data:/var/www/html/:ro
+      - staticfiles:/var/www/html/static/:ro
     ports:
       - 8080:8080
     depends_on:
@@ -63,13 +65,14 @@ services:
         condition: service_healthy
       frontend-builder:
         condition:  service_completed_successfully
-    networks:
-      - qcon-network
+    # networks:
+    #   - qcon-network
 
-networks:
-  qcon-network:
-    external: true
-    name: qcon-network
+# networks:
+#   qcon-network:
+#     external: true
+#     name: qcon-network
 
 volumes:
   data:
+  staticfiles:
