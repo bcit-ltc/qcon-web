@@ -25,8 +25,8 @@ services:
     ports:
       - 9000:9000
 
-    # networks:
-    #   - qcon-network
+    networks:
+      - qcon-network
 
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9000 || exit 1"]
@@ -65,13 +65,13 @@ services:
         condition: service_healthy
       frontend-builder:
         condition:  service_completed_successfully
-    # networks:
-    #   - qcon-network
+    networks:
+      - qcon-network
 
-# networks:
-#   qcon-network:
-#     external: true
-#     name: qcon-network
+networks:
+  qcon-network:
+    external: true
+    name: qcon-network
 
 volumes:
   data:
