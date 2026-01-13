@@ -41,7 +41,6 @@ def get_secret(name: str, default: str = None, required: bool = False, subdirect
 API_HOST = os.getenv('API_HOST')
 API_PORT = os.getenv('API_PORT')
 API_KEY = get_secret('API_KEY', subdirectory='api-key', required=True)
-# POSTGRES_HOST = get_secret('POSTGRES_HOST', subdirectory='db-credentials', required=True)
 
 APP_VERSION = os.getenv('APP_VERSION')
 
