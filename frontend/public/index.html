@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-{% load static %}
+    {% load static %}
 
-<head>
+    <head>
   <meta charset="utf-8" name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width">
   <meta name="robots" content="noindex, nofollow">
   <link rel="apple-touch-icon" sizes="180x180" href="./static/apple-touch-icon.png?">
@@ -12,23 +12,34 @@
   <link rel="icon" type="image/png" sizes="16x16" href="./static/favicon-16x16.png?">
   <link rel="icon" type="image/x-icon" href="./static/favicon.ico?">
   <link rel="manifest" href="./static/asset-manifest.json?">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <title>Qcon Web</title>
-  {% csrf_token %}
-</head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <!-- Plausible Analytics -->
+        <script>
+            // Configure Plausible before script loads
+            window.plausible =
+                window.plausible ||
+                function () {
+                    (window.plausible.q = window.plausible.q || []).push(arguments);
+                };
+            // Configure: allow localhost tracking for testing
+            window.plausible.o = {
+                captureOnLocalhost: false,
+                autoCapturePageviews: true,
+            };
+        </script>
+        <script defer src="https://common.ltc.bcit.ca/js/utils.js"></script>
+        <title>Qcon Web</title>
+        {% csrf_token %}
+    </head>
 
+    <body>
+        <div id="root"></div>
+        <footer id="footer">
+            <span>qcon-web {{ version }}</span>
 
-<body>
-  <div id="root">
-  </div>
-  <footer id="footer">
-    <span>qcon-web {{ version }}</span>
-
-    <span class="cp-footer">made with tons of ☕ by <a href="https://course-production.ltc.bcit.ca/"
-        target="_blank" rel="noopener noreferrer">Course Production Team</a></span>
-  </footer>
-</body>
-
+            <span class="cp-footer">made with tons of ☕ by <a href="https://course-production.ltc.bcit.ca/" target="_blank" rel="noopener noreferrer">Course Production Team</a></span>
+        </footer>
+    </body>
 </html>
