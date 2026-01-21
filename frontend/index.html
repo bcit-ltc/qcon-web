@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+{% load static %}
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Qcon Web</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="manifest" href="{% static 'asset-manifest.json' %}?v={{ version }}" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+  {% csrf_token %}
+  <!-- Plausible Analytics -->
+  <script>
+    // Configure Plausible before script loads
+    window.plausible =
+      window.plausible ||
+      function () {
+        (window.plausible.q = window.plausible.q || []).push(arguments);
+      };
+    // Configure: allow localhost tracking for testing
+    window.plausible.o = {
+      captureOnLocalhost: false,
+      autoCapturePageviews: true,
+    };
+  </script>
+  <script defer src="https://common.ltc.bcit.ca/js/utils.js"></script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <footer id="footer">
+    <span>qcon-web {{ version }}</span>
+    <span class="cp-footer">made with tons of ☕ by <a href="https://course-production.ltc.bcit.ca/" target="_blank"
+        rel="noopener noreferrer">Course Production Team</a></span>
+  </footer>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>

@@ -208,6 +208,11 @@ LOGGING = {
         }
     },
     'loggers': {
+        'django.utils.autoreload': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
         'django': {
             'handlers': ['console'],
             'level': 'DEBUG' if DEBUG else 'ERROR',
