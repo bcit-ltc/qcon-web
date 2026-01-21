@@ -3,7 +3,6 @@ name: ${APP_NAME:-qcon-web}
 services:
 
   app:
-    image: qcon-web
     build: 
       context: .
       args:

@@ -76,7 +76,39 @@ export default function App() {
     }, []);
 
     useEffect(() => {
-        sessionStorage.setItem('qconjsonresult', jsonString);
+        if (jsonString) {
+            try {
+                // Check size before attempting to save (sessionStorage limit is typically 5-10MB)
+                const sizeInBytes = new Blob([jsonString]).size;
+                const sizeInMB = sizeInBytes / 1024 / 1024;
+                
+                if (sizeInMB > 5) {
+                    // For large payloads, don't save to sessionStorage to avoid quota errors
+                    console.warn(`JSON result is ${sizeInMB.toFixed(2)}MB, too large for sessionStorage. Skipping save.`);
+                    // Remove any existing entry to free up space
+                    try {
+                        sessionStorage.removeItem('qconjsonresult');
+                    } catch (e) {
+                        // Ignore
+                    }
+                } else {
+                    sessionStorage.setItem('qconjsonresult', jsonString);
+                }
+            } catch (error) {
+                // Handle quota exceeded or other storage errors
+                if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                    console.warn('SessionStorage quota exceeded. JSON result is too large to save. The data is still available in memory.');
+                    // Try to remove old data to free up space
+                    try {
+                        sessionStorage.removeItem('qconjsonresult');
+                    } catch (e) {
+                        // Ignore
+                    }
+                } else {
+                    console.error('Error saving to sessionStorage:', error);
+                }
+            }
+        }
     }, [jsonString]);
 
     const ws = useRef(null);
@@ -125,75 +157,205 @@ export default function App() {
             setTryConnection(false);
             setConnectionDone(false);
 
+            // Keepalive interval to prevent idle timeout (send ping every 30 seconds)
+            // Declared outside handlers so it's accessible to all
+            let keepaliveInterval = null;
+
             ws.current.onopen = () => {
                 // console.log("ws opened");
                 setWebsocketMessage("");
                 setTryConnection(true);
                 // ws.current.send("message from browser")
                 setIsConnectWebsocket(true);
+                
+                // Start keepalive ping to prevent idle timeout
+                keepaliveInterval = setInterval(() => {
+                    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+                        // Send a small ping message to keep connection alive
+                        try {
+                            ws.current.send(JSON.stringify({ type: 'ping' }));
+                        } catch (err) {
+                            console.warn("Keepalive ping failed:", err);
+                        }
+                    } else {
+                        // Connection closed, clear interval
+                        if (keepaliveInterval) {
+                            clearInterval(keepaliveInterval);
+                            keepaliveInterval = null;
+                        }
+                    }
+                }, 30000); // Every 30 seconds
             };
             ws.current.onclose = (event) => {
+                // Clear keepalive interval
+                if (keepaliveInterval) {
+                    clearInterval(keepaliveInterval);
+                    keepaliveInterval = null;
+                }
+                
                 // let closeMessage = "WS close event:" + event.code;
                 // https://datatracker.ietf.org/doc/html/rfc6455#section-7.4
                 // console.log(closeMessage);
                 setTryConnection(false);
                 setIsConnectWebsocket(false);
-                // if (state === 'PROGRESS') {
-                //     setErrorMessage(closeMessage);
-                //     setState("ERROR");
-                //     ws.current = null;
-                // }
+                
+                // Only show error if connection closed unexpectedly during processing
+                // Check sessionStorage for current state since state variable may not be accessible
+                const currentState = sessionStorage.getItem('qconstate');
+                if (currentState === 'PROGRESS' && event.code !== 1000) {
+                    // 1000 = normal closure, other codes indicate error
+                    let closeMessage = `Connection closed unexpectedly (code: ${event.code}, reason: ${event.reason || 'unknown'})`;
+                    console.error(closeMessage);
+                    setErrorMessage(closeMessage);
+                    setState("ERROR");
+                }
+            };
+            ws.current.onerror = (error) => {
+                console.error("WebSocket error:", error);
+                // Error handling is also done in onclose
             };
             ws.current.onmessage = e => {
-                const message = JSON.parse(e.data);
-                let messageStatus = message['status'];
-                setWebsocketMessage(message['statustext']);
-                console.log(`API host: ${message['hostname']} version: ${message['version']}`);
-                setDebug(JSON.stringify(message, null, 4));
-                
-                // eslint-disable-next-line
-                switch (messageStatus) {
-                    case 'Done': {
-                        console.log("WebSocket message received:", message);
-                        let jsonStringified = null;
-                        try {
-                            jsonStringified = JSON.stringify(message);
-                        } catch (err) {
-                            console.error("Error stringifying message:", err, message);
-                        }
-                        setJsonString(prev => {
-                            console.log("Previous jsonString:", prev);
-                            console.log("New jsonStringified:", jsonStringified);
-                            return jsonStringified;
-                        });
-                        setConnectionDone(true);
-                        setTryConnection(false);
-                        setIsConnectWebsocket(false);
-                        setState('PROGRESSDONE');
-                        ws.current.close();
-                        break;
+                try {
+                    // Log message size for debugging large messages
+                    const messageSize = e.data ? new Blob([e.data]).size : 0;
+                    if (messageSize > 1024 * 1024) { // Log if > 1MB
+                        console.log(`Received large WebSocket message: ${(messageSize / 1024 / 1024).toFixed(2)}MB`);
                     }
-                    case 'Error': {
-                        let jsonStringified = null;
-                        try {
-                            jsonStringified = JSON.stringify(message);
-                        } catch (err) {
-                            console.error("Error stringifying message:", err, message);
-                        }
-                        setJsonString(prev => {
-                            console.log("Previous jsonString:", prev);
-                            console.log("New jsonStringified:", jsonStringified);
-                            return jsonStringified;
-                        });
-                        setTryConnection(false);
-                        setIsConnectWebsocket(false);
-                        setErrorMessage(message['statustext']);
+                    
+                    // Parse JSON with better error handling for large messages
+                    let message;
+                    try {
+                        message = JSON.parse(e.data);
+                    } catch (parseError) {
+                        console.error("Error parsing JSON message:", parseError);
+                        console.error("Message size:", messageSize, "bytes");
+                        console.error("Message preview (first 500 chars):", e.data.substring(0, 500));
+                        setErrorMessage("Failed to parse response from server. The message may be too large.");
                         setState('ERROR');
-                        ws.current.close();
-                        break;
+                        return;
+                    }
+                    
+                    // Ignore ping responses
+                    if (message.type === 'pong') {
+                        return;
+                    }
+                    
+                    let messageStatus = message['status'];
+                    setWebsocketMessage(message['statustext'] || '');
+                    if (message['hostname']) {
+                        console.log(`API host: ${message['hostname']} version: ${message['version'] || 'unknown'}`);
+                    }
+                    
+                    // Only set debug for non-Done messages to avoid stringifying huge messages
+                    // For Done messages, we'll set debug after processing
+                    if (messageStatus !== 'Done') {
+                        try {
+                            setDebug(JSON.stringify(message, null, 4));
+                        } catch (err) {
+                            console.warn("Could not stringify message for debug:", err);
+                        }
+                    }
+                    
+                    // eslint-disable-next-line
+                    switch (messageStatus) {
+                        case 'Done': {
+                            console.log("WebSocket Done message received, size:", messageSize, "bytes");
+                            
+                            // Verify the message has the expected structure
+                            if (!message.data) {
+                                console.error("Done message missing 'data' field");
+                                setErrorMessage("Received incomplete response from server.");
+                                setState('ERROR');
+                                return;
+                            }
+                            
+                            // Stringify the message for storage (do this asynchronously to avoid blocking)
+                            const stringifyMessage = () => {
+                                try {
+                                    const jsonStringified = JSON.stringify(message);
+                                    console.log("Successfully stringified Done message, length:", jsonStringified.length);
+                                    
+                                    // Set debug after stringification (only if debug mode is enabled)
+                                    if (process.env.REACT_APP_DEBUG === 'true') {
+                                        try {
+                                            setDebug(jsonStringified);
+                                        } catch (debugErr) {
+                                            console.warn("Could not set debug for large message:", debugErr);
+                                        }
+                                    }
+                                    
+                                    setJsonString(prev => {
+                                        console.log("Previous jsonString length:", prev ? prev.length : 0);
+                                        console.log("New jsonStringified length:", jsonStringified.length);
+                                        return jsonStringified;
+                                    });
+                                    
+                                    setConnectionDone(true);
+                                    setTryConnection(false);
+                                    setIsConnectWebsocket(false);
+                                    setState('PROGRESSDONE');
+                                } catch (err) {
+                                    console.error("Error stringifying message:", err);
+                                    setErrorMessage("Failed to process response from server.");
+                                    setState('ERROR');
+                                    return;
+                                }
+                            };
+                            
+                            // Use setTimeout with 0 delay to allow UI to update first
+                            // This prevents blocking the main thread during large message processing
+                            setTimeout(stringifyMessage, 0);
+                            
+                            // Clear keepalive before closing
+                            if (keepaliveInterval) {
+                                clearInterval(keepaliveInterval);
+                                keepaliveInterval = null;
+                            }
+                            
+                            // Wait longer before closing to ensure message is fully processed
+                            setTimeout(() => {
+                                if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+                                    ws.current.close(1000, 'Processing complete');
+                                }
+                            }, 1000); // Increased delay for large messages to ensure processing completes
+                            break;
+                        }
+                        case 'Error': {
+                            let jsonStringified = null;
+                            try {
+                                jsonStringified = JSON.stringify(message);
+                            } catch (err) {
+                                console.error("Error stringifying message:", err, message);
+                            }
+                            setJsonString(prev => {
+                                console.log("Previous jsonString:", prev);
+                                console.log("New jsonStringified:", jsonStringified);
+                                return jsonStringified;
+                            });
+                            setTryConnection(false);
+                            setIsConnectWebsocket(false);
+                            setErrorMessage(message['statustext']);
+                            setState('ERROR');
+                            
+                            // Clear keepalive before closing
+                            if (keepaliveInterval) {
+                                clearInterval(keepaliveInterval);
+                                keepaliveInterval = null;
+                            }
+                            
+                            if (ws.current) {
+                                ws.current.close(1000, 'Error occurred');
+                            }
+                            break;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error parsing WebSocket message:", err, e.data);
+                    // Try to handle partial/large messages
+                    if (e.data && typeof e.data === 'string' && e.data.length > 0) {
+                        console.warn("Message might be too large or malformed. Size:", e.data.length);
                     }
                 }
-
 
                 // setWebsocketMessage(JSON.stringify(message, null, 4));
                 // console.log("e", message);
