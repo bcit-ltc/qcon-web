@@ -23,9 +23,11 @@ FROM node:25.1.0-alpine3.22 AS qcon-web-frontend-builder
 
 WORKDIR /app
 
-COPY /frontend/package.json ./
+COPY /frontend/package*.json ./
+COPY /frontend/vite.config.js ./
+COPY /frontend/index.html ./
 
-RUN npm install
+RUN npm ci
 
 
 

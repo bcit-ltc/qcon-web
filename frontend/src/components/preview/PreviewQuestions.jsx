@@ -81,6 +81,7 @@ function PreviewQuestions(props) {
     const [openSummary, setOpenSummary] = useState(false);
     const [expandedAccordions, setExpandedAccordions] = useState({});
     const parsedJson = JSON.parse(props.jsonString)["data"];
+    // console.log(props.jsonString);
     const listStyles = [null, 'decimal', 'lower-roman', 'upper-roman', 'lower-alpha', 'upper-alpha', 'none'];
     const listStyle = listStyles[parsedJson.enumeration] || 'lower-alpha';
     // let totalSections = 0;
@@ -262,6 +263,12 @@ function PreviewQuestions(props) {
                 <Typography className="section-name" variant="h2">
                     {parsedJson.main_title}
                 </Typography>
+                {parsedJson.main_text && (
+                    <div
+                        className="section-text"
+                        dangerouslySetInnerHTML={{ __html: parsedJson.main_text }}
+                    ></div>
+                )}
 
                 {
                     currentQuestions.sections.map((section, sectionIndex) => (

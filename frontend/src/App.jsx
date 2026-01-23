@@ -439,7 +439,7 @@ export default function App() {
 
             </ThemeProvider>
             {
-                ((process.env.REACT_APP_DEBUG === 'true') && Debug) &&
+                ((import.meta.env.VITE_DEBUG === 'true') && Debug) &&
                 <div>
                     <button style={{ marginLeft: "2.5%" }} onClick={() => navigator.clipboard.writeText(Debug)}>Copy JSON 📋</button>
                     <pre style={{ maxWidth: "95%", maxHeight: "500px", margin: "auto", backgroundColor: "lightgrey", overflow: "scroll", textOverflow: "ellipsis" }}>

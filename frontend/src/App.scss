@@ -1,3 +1,5 @@
+@use "sass:list";
+
 $colors: #ff8a80, #b9f6ca, #80d8ff, #ffff00, #ea80fc, #ffab40, #ff4081, #76ff03,
   #18ffff, #f4ff81, #ba68c8, #ff6e40, #1de9b6, #78909c, #fff9c4, #4caf50,
   #afb42b, #a1887f, #e0e0e0, #26a69a;
@@ -327,7 +329,7 @@ body {
             }
 
             @each $color in $colors {
-              $i: index($colors, $color);
+              $i: list.index($colors, $color);
 
               .match-right-color-#{$i},
               .match-left-color-#{$i}::before {
