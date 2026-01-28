@@ -3,7 +3,7 @@
 ## Base
 # FROM registry.ltc.bcit.ca/ltc-infrastructure/images/qcon-web-base AS qcon-web-base
 
-FROM python:3.11-alpine AS qcon-web-base
+FROM python:3.14-alpine AS qcon-web-base
 
 ENV PATH=/opt/venv/bin:/base:$PATH
 
@@ -19,7 +19,7 @@ RUN set -ex; \
 ## Frontend Builder
 # FROM registry.ltc.bcit.ca/ltc-infrastructure/images/qcon-web-frontend-builder AS qcon-web-frontend-builder
 
-FROM node:25.1.0-alpine3.22 AS qcon-web-frontend-builder
+FROM node:25.5.0-alpine3.23 AS qcon-web-frontend-builder
 
 WORKDIR /app
 
@@ -39,7 +39,7 @@ RUN npm run build
 
 
 ## Release
-FROM python:3.11-alpine AS release
+FROM python:3.14-alpine AS release
 
 LABEL maintainer=courseproduction@bcit.ca
 LABEL org.opencontainers.image.source=https://github.com/bcit-ltc/qcon-web

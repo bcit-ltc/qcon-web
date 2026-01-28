@@ -24,8 +24,6 @@ class TextConsumer(AsyncJsonWebsocketConsumer):
             'max_size': None,  # Remove message size limit
             'ping_interval': 30,  # Send ping every 30 seconds
             'close_timeout': 60,  # Wait up to 60 seconds when closing
-            'read_limit': 2**30,  # 1GB read limit
-            'write_limit': 2**30,  # 1GB write limit
         }
 
         async with websockets.connect(self.wssurl, **connect_kwargs) as websocket:
