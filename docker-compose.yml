@@ -8,9 +8,9 @@ services:
       args:
         - VERSION=dev
     # Dev server with auto-reload
-    # command: python manage.py runserver 0.0.0.0:9000
+    command: python manage.py runserver 0.0.0.0:9000
     # Production-style ASGI server (uncomment to use)
-    command: daphne -b 0.0.0.0 -p 9000 qconweb.asgi:application
+    # command: daphne -b 0.0.0.0 -p 9000 qconweb.asgi:application
     environment:
       DEBUG: true
       API_HOST: api.local
