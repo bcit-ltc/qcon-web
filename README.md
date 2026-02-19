@@ -19,7 +19,7 @@ See the [Qcon User Guide](https://qcon-guide.ltc.bcit.ca) for more information.
 ### Commands for devcontainer
 
 - **Prereqs**
-  - Allow VS Code to read `.envrc`.
+  - Allow IDE to read `.envrc` with `direnv allow`.
   - Run `make help` to see available `make` targets.
 
 1. **Run checks**
