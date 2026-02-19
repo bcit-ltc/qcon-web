@@ -10,9 +10,9 @@ ENV PATH=/opt/venv/bin:/base:$PATH
 COPY requirements.txt ./
 
 RUN set -ex; \
-        python -m venv /opt/venv; \
-        pip install --upgrade pip; \
-        pip install -r requirements.txt;
+    python -m venv /opt/venv; \
+    pip install --upgrade pip; \
+    pip install -r requirements.txt;
 
 
 
@@ -29,13 +29,11 @@ COPY /frontend/index.html ./
 
 RUN npm ci
 
-
-
-
 COPY frontend/public ./public/
 # COPY frontend/templates ./templates
 COPY frontend/src ./src/
 RUN npm run build
+
 
 
 ## Release
